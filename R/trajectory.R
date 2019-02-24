@@ -448,6 +448,11 @@ estimate_position_for_time <- function(trajectory, timepoint) {
 #'   new_settings(show_labels = T),
 #'   targets = 1:4
 #' )
+#' # Add background image
+#' render_trajectory_video("trajectory.mp4", trajectory8c,
+#'   new_settings(show_labels = T, background = imager::boats),
+#'   targets = 1:4
+#' )
 render_trajectory_video <- function(filename,
                                     trajectory,
                                     settings = default_settings(),
@@ -469,6 +474,7 @@ render_trajectory_video <- function(filename,
     outdir = outdir, ani.width = video_width, ani.height = video_height
   )
 
+
   animation::saveVideo({
     # preview
     for (i in 1:(preview_seconds * fps)) {
@@ -487,7 +493,6 @@ render_trajectory_video <- function(filename,
       for (i in 1:(respond_seconds * fps)) {
         p <- estimate_position_for_time(trajectory, tmax)
         fig <- plot_position(p, settings = settings, targets = targets)
-
 
         print(fig)
       }
@@ -508,6 +513,7 @@ render_trajectory_video <- function(filename,
   }, video.name = filename, other.opts = "-pix_fmt yuv420p -b 600k", clean = T)
   animation::ani.options(oopt)
 }
+
 
 #' Save trajectory to file
 #'

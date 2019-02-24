@@ -26,5 +26,8 @@ Imports:
     stringr,
     rlang (>= 0.1.2)
 Suggests: 
+    grid,
     testthat,
+    imager,
     roxygen2
+    

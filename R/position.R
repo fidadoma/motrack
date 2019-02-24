@@ -246,12 +246,20 @@ random_coords_in_circle <- function(n, xmid, ymid, radius) {
 #' @examples
 #' # sample positions with no other requirements
 #' set.seed(100)
+#'
+#' sett <- default_settings()
+#'
 #' pos <- generate_positions_random(8, default_settings())
-#' plot_position(pos, default_settings())
+#' plot_position(pos, sett)
 #' # first four objects are targets
-#' plot_position(pos, default_settings(), 1:4)
+#' plot_position(pos, sett, 1:4)
 #' pos$fill <- rainbow(8)
-#' plot_position(pos, default_settings())
+#' plot_position(pos, sett)
+#'
+#' # add background image
+#' sett <- new_settings(background = imager::boats)
+#' plot_position(pos, sett)
+#'
 plot_position <- function(position,
                           settings = default_settings(),
                           targets = NULL) {
@@ -286,6 +294,13 @@ plot_position <- function(position,
     ggplot2::theme(panel.background = ggplot2::element_blank()) +
     ggplot2::coord_fixed(xlim = settings$xlim, ylim = settings$ylim, expand = F) +
     NULL
+
+  # insert the image into background
+  if(!is.null(settings$background)) {
+    g <- grid::rasterGrob(imager::as.cimg(settings$background), interpolate=TRUE)
+    fig$layers <- c(ggplot2::annotation_custom(g, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf), fig$layers)
+  }
+
   if (settings$show_labels) {
     fig <-
       fig +
@@ -315,3 +330,4 @@ plot_position <- function(position,
   }
   fig
 }
+

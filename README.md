@@ -70,6 +70,7 @@ trajectory_v <-
 plot_trajectory(trajectory_d, sett_show)
 plot_trajectory(trajectory_z, sett_show)
 plot_trajectory(trajectory_v, sett_show)
+
 ```
 
 If you have `ffmpeg` installed, you can use `animation` package to render videos.
@@ -85,4 +86,12 @@ render_trajectory_video("trajectory_z.mp4", trajectory_z,
 render_trajectory_video("trajectory_v.mp4", trajectory_v, 
   new_settings(show_labels = T), targets = 1:4
 )
+
+# we can also add background image (requires imager package)
+
+backg_img <- imager::boats
+render_trajectory_video("trajectory_v.mp4", trajectory_v, 
+  new_settings(show_labels = T, background = backg_img), targets = 1:4
+)
+
 ```
