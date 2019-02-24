@@ -392,6 +392,7 @@ plot_trajectory <- function(trajectory,
         colour = I("red")
       )
   }
+
   fig
 }
 
@@ -431,7 +432,8 @@ estimate_position_for_time <- function(trajectory, timepoint) {
 #' @param filename the file name of output video (e.g. "trajectory.mp4")
 #' @param trajectory tibble with trajectory data
 #' @param settings list with basic properties
-#' @param targets Which objects should be treated as targets
+#' @param targets which objects should be treated as targets.
+#' @param targets_cue_only should targets be highlighted only in cue phase?
 #' @param outdir output directory where the video is saved
 #'
 #' @return No return value
@@ -441,6 +443,7 @@ estimate_position_for_time <- function(trajectory, timepoint) {
 #' # set ffmpeg in necessary
 #'
 #' # ani.options(ffmpeg = "/PATH/TO/ffmpeg/ffmpeg")
+#'
 #' render_trajectory_video("trajectory.mp4", trajectory8c,
 #'   new_settings(show_labels = T),
 #'   targets = 1:4
@@ -449,6 +452,7 @@ render_trajectory_video <- function(filename,
                                     trajectory,
                                     settings = default_settings(),
                                     targets = NULL,
+                                    targets_cue_only = F,
                                     outdir = getwd()) {
   # animation parameters
   fps <- 25
@@ -464,22 +468,42 @@ render_trajectory_video <- function(filename,
     interval = 1 / fps, nmax = fps * tlen * 2,
     outdir = outdir, ani.width = video_width, ani.height = video_height
   )
+
   animation::saveVideo({
     # preview
     for (i in 1:(preview_seconds * fps)) {
       p <- estimate_position_for_time(trajectory, tmin)
       fig <- plot_position(p, settings = settings, targets = targets)
+
       print(fig)
     }
-    for (tim in seq(tmin, tmax, 1 / fps)) {
-      p <- estimate_position_for_time(trajectory, tim)
-      fig <- plot_position(p, settings = settings, targets = targets)
-      print(fig)
-    }
-    for (i in 1:(respond_seconds * fps)) {
-      p <- estimate_position_for_time(trajectory, tmax)
-      fig <- plot_position(p, settings = settings, targets = targets)
-      print(fig)
+    if (!targets_cue_only) {
+      for (tim in seq(tmin, tmax, 1 / fps)) {
+        p <- estimate_position_for_time(trajectory, tim)
+        fig <- plot_position(p, settings = settings, targets = targets)
+
+        print(fig)
+      }
+      for (i in 1:(respond_seconds * fps)) {
+        p <- estimate_position_for_time(trajectory, tmax)
+        fig <- plot_position(p, settings = settings, targets = targets)
+
+
+        print(fig)
+      }
+    } else {
+      for (tim in seq(tmin, tmax, 1 / fps)) {
+        p <- estimate_position_for_time(trajectory, tim)
+        fig <- plot_position(p, settings = settings)
+
+        print(fig)
+      }
+      for (i in 1:(respond_seconds * fps)) {
+        p <- estimate_position_for_time(trajectory, tmax)
+        fig <- plot_position(p, settings = settings)
+
+        print(fig)
+      }
     }
   }, video.name = filename, other.opts = "-pix_fmt yuv420p -b 600k", clean = T)
   animation::ani.options(oopt)
