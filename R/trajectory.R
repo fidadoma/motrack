@@ -514,6 +514,103 @@ render_trajectory_video <- function(filename,
   animation::ani.options(oopt)
 }
 
+#' Render video from trajectory by additive adding target images to the background
+#'
+#' The function repeatedly calls plot_position_additive function to generate preview
+#' of the trajectory motion.
+#' This function differs from render_trajectory_video as it uses creates plot positions by adding targets to background additively (which can't be done using simple ggplot logic)
+#' Extra time is added before and after the motion sequence (2 seconds each).
+#' Currently works only with rectangular arrays and it is not controlled that the objects are within the image. To ensure that the objects are within the borders, use larger images. This will be controlled in sctipt in the future
+#'
+#' @param filename the file name of output video (e.g. "trajectory.mp4")
+#' @param trajectory tibble with trajectory data
+#' @param settings list with basic properties
+#' @param targets Which objects should be treated as targets
+#' @param outdir output directory where the video is saved
+#'
+#' @return No return value
+#' @export
+#'
+#' @examples
+#' # set background as random array
+#' backg <- matrix(sample(255, size = 750*750, replace = T), nrow = 750,ncol = 750) %>% imager::as.cimg()
+#'
+#' # set target
+#' rlogo <- imager::load.image(system.file("img", "Rlogo.png", package="png")) %>% imager::rm.alpha()
+#' alpha_rlogo <-attr(rlogo,"alpha") %>% imager::resize_halfXY()
+#' rlogo <- rlogo %>% imager::grayscale() %>% imager::resize_halfXY()
+#' rlogo <- 127 * (rlogo - mean(rlogo))
+#' rlogo <- rlogo*alpha_rlogo
+#'
+#' # set ffmpeg in necessary
+#'
+#' # ani.options(ffmpeg = "/PATH/TO/ffmpeg/ffmpeg")
+#'
+#' sett_show <- new_settings(show_labels = F, fill_target = NA, fill_object = NA, border_object = NA, border_target = "green", background = backg, target_img = rlogo)
+#' render_trajectory_video_additive("trajectory.mp4", trajectory8c,
+#'   sett_show,
+#'   targets = 1:4
+#' )
+render_trajectory_video_additive <- function(filename,
+                                             trajectory,
+                                             settings = default_settings(),
+                                             targets = NULL,
+                                             targets_cue_only = F,
+                                             outdir = getwd()) {
+  # animation parameters
+  fps <- 25
+  video_width <- 600
+  video_height <- 600
+  preview_seconds <- 2
+  respond_seconds <- 2
+
+  tmin <- min(trajectory$time)
+  tmax <- max(trajectory$time)
+  tlen <- tmax - tmin
+  oopt <- animation::ani.options(
+    interval = 1 / fps, nmax = fps * tlen * 2,
+    outdir = outdir, ani.width = video_width, ani.height = video_height
+  )
+
+  animation::saveVideo({
+    # preview
+    for (i in 1:(preview_seconds * fps)) {
+      p <- estimate_position_for_time(trajectory, tmin)
+      fig <- plot_position_image(p, settings = settings, targets = targets)
+
+      print(fig)
+    }
+    if (!targets_cue_only) {
+      for (tim in seq(tmin, tmax, 1 / fps)) {
+        p <- estimate_position_for_time(trajectory, tim)
+        fig <- plot_position_image(p, settings = settings, targets = targets)
+
+        print(fig)
+      }
+      for (i in 1:(respond_seconds * fps)) {
+        p <- estimate_position_for_time(trajectory, tmax)
+        fig <- plot_position_image(p, settings = settings, targets = targets)
+
+        print(fig)
+      }
+    } else {
+      for (tim in seq(tmin, tmax, 1 / fps)) {
+        p <- estimate_position_for_time(trajectory, tim)
+        fig <- plot_position_image(p, settings = settings)
+
+        print(fig)
+      }
+      for (i in 1:(respond_seconds * fps)) {
+        p <- estimate_position_for_time(trajectory, tmax)
+        fig <- plot_position_image(p, settings = settings)
+
+        print(fig)
+      }
+    }
+
+  }, video.name = filename, other.opts = "-pix_fmt yuv420p -b 600k", clean = T)
+  animation::ani.options(oopt)
+}
 
 #' Save trajectory to file
 #'
