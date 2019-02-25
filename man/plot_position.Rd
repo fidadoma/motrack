@@ -27,10 +27,18 @@ border (Character vector with colour names of object borders.).
 \examples{
 # sample positions with no other requirements
 set.seed(100)
+
+sett <- default_settings()
+
 pos <- generate_positions_random(8, default_settings())
-plot_position(pos, default_settings())
+plot_position(pos, sett)
 # first four objects are targets
-plot_position(pos, default_settings(), 1:4)
+plot_position(pos, sett, 1:4)
 pos$fill <- rainbow(8)
-plot_position(pos, default_settings())
+plot_position(pos, sett)
+
+# add background image
+sett <- new_settings(background = imager::boats)
+plot_position(pos, sett)
+
 }

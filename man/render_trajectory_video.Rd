@@ -5,7 +5,8 @@
 \title{Render video from trajectory}
 \usage{
 render_trajectory_video(filename, trajectory,
-  settings = default_settings(), targets = NULL, outdir = getwd())
+  settings = default_settings(), targets = NULL,
+  targets_cue_only = F, outdir = getwd())
 }
 \arguments{
 \item{filename}{the file name of output video (e.g. "trajectory.mp4")}
@@ -14,7 +15,9 @@ render_trajectory_video(filename, trajectory,
 
 \item{settings}{list with basic properties}
 
-\item{targets}{Which objects should be treated as targets}
+\item{targets}{which objects should be treated as targets.}
+
+\item{targets_cue_only}{should targets be highlighted only in cue phase?}
 
 \item{outdir}{output directory where the video is saved}
 }
@@ -30,8 +33,14 @@ Extra time is added before and after the motion sequence (2 seconds each).
 # set ffmpeg in necessary
 
 # ani.options(ffmpeg = "/PATH/TO/ffmpeg/ffmpeg")
+
 render_trajectory_video("trajectory.mp4", trajectory8c,
   new_settings(show_labels = T),
+  targets = 1:4
+)
+# Add background image
+render_trajectory_video("trajectory.mp4", trajectory8c,
+  new_settings(show_labels = T, background = imager::boats),
   targets = 1:4
 )
 }
